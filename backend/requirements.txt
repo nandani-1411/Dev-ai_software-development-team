@@ -7,3 +7,8 @@ python-dotenv==1.0.1
 
 # Data validation
 pydantic==2.9.2
+
+# LangChain / LangGraph / Mistral
+langchain>=0.3.0,<0.4.0
+langgraph>=0.2.50,<0.3.0
+langchain-mistralai>=0.2.0,<0.3.0
