@@ -3,6 +3,8 @@ import './App.css'
 
 const HEALTH_URL = '/api/v1/health'
 const PLAN_URL = '/api/v1/plan'
+const APPROVAL_URL = '/api/v1/approve'
+const STREAM_URL = '/api/v1/stream'
 
 function App() {
   const [health, setHealth] = useState(null)
@@ -11,6 +13,7 @@ function App() {
   const [plan, setPlan] = useState(null)
   const [planError, setPlanError] = useState(null)
   const [isPlanning, setIsPlanning] = useState(false)
+  const [events, setEvents] = useState([])
 
   useEffect(() => {
     fetch(HEALTH_URL)
@@ -18,6 +21,20 @@ function App() {
       .then((data) => setHealth(data))
       .catch((err) => setHealthError(err.message))
   }, [])
+
+  useEffect(() => {
+    if (isPlanning) {
+      setEvents([])
+      const eventSource = new EventSource(STREAM_URL)
+      eventSource.onmessage = (e) => {
+        setEvents((prev) => [...prev, e.data])
+      }
+      eventSource.onerror = () => {
+        eventSource.close()
+      }
+      return () => eventSource.close()
+    }
+  }, [isPlanning])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -78,6 +95,17 @@ function App() {
           </form>
         </section>
 
+        {events.length > 0 && (
+          <section className="plan-result">
+            <h2>Agent Activity</h2>
+            <ul>
+              {events.map((event, index) => (
+                <li key={index}>{event}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {plan && (
           <>
             <section className="plan-result">
@@ -118,6 +146,36 @@ function App() {
               <p>Backend: {plan.backend_status || 'N/A'}</p>
               <p>Overall: {plan.project_status}</p>
             </section>
+
+            {plan.test_results && (
+              <section className="plan-result">
+                <h2>Test Results</h2>
+                <p>Total: {plan.test_results.total || 0}</p>
+                <p>Passed: {plan.test_results.passed || 0}</p>
+                <p>Failed: {plan.test_results.failed || 0}</p>
+              </section>
+            )}
+
+            {plan.review_result && (
+              <section className="plan-result">
+                <h2>Code Review</h2>
+                <p>Status: {plan.review_result.status || 'N/A'}</p>
+              </section>
+            )}
+
+            {plan.documentation && (
+              <section className="plan-result">
+                <h2>Documentation</h2>
+                <p>{plan.documentation}</p>
+              </section>
+            )}
+
+            {plan.project_status === 'git_initialized' && (
+              <section className="plan-result">
+                <h2>Git Status</h2>
+                <p>Repository initialized with initial commit</p>
+              </section>
+            )}
           </>
         )}
 

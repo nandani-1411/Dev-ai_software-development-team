@@ -4,6 +4,7 @@ from langchain_mistralai import ChatMistralAI
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.config import settings
+from app.rag import RAGManager
 
 
 class PlannerAgent:
@@ -13,9 +14,17 @@ class PlannerAgent:
             api_key=settings.MISTRAL_API_KEY,
             temperature=0.3,
         )
+        self.rag = RAGManager()
+        self.rag.add_document("architecture", "Use React for frontend, FastAPI for backend, SQLite for database")
 
     def generate_plan(self: Self, project_request: str) -> str:
-        system_prompt = """You are a software development planner. Convert the user's project requirement into a structured development plan.
+        context = self.rag.search(project_request)
+        context_str = "\n".join(context) if context else ""
+
+        system_prompt = f"""You are a software development planner. Convert the user's project requirement into a structured development plan.
+
+Relevant context from project memory:
+{context_str}
 
 Your output should be a numbered list of steps covering:
 1. Requirements definition

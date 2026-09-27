@@ -21,4 +21,7 @@ class ProjectState(TypedDict):
     current_agent: str
     project_status: str
     workspace_path: str
+    needs_approval: bool
+    approval_action: str
+    debug_attempts: int
     messages: Annotated[list, add_messages]

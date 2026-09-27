@@ -40,9 +40,12 @@ async def create_plan(request: PlanRequest):
             "current_agent": "",
             "project_status": "",
             "workspace_path": str(project_workspace),
+            "needs_approval": False,
+            "approval_action": "",
+            "debug_attempts": 0,
             "messages": [],
         }
-        result = graph.invoke(initial_state)
+        result = graph.invoke(initial_state, {"recursion_limit": 50})
         return {
             "status": "success",
             "project_id": project_id,
@@ -51,6 +54,9 @@ async def create_plan(request: PlanRequest):
             "files_changed": result["files_changed"],
             "frontend_status": result["frontend_status"],
             "backend_status": result["backend_status"],
+            "test_results": result["test_results"],
+            "review_result": result["review_result"],
+            "documentation": result["documentation"],
             "project_status": result["project_status"],
         }
     except Exception as e:

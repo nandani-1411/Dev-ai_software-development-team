@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import health, project
+from app.api.v1 import approval, health, project, stream
 
 
 @asynccontextmanager
@@ -33,6 +33,8 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(project.router)
+app.include_router(approval.router)
+app.include_router(stream.router)
 
 
 @app.get("/", tags=["status"])
